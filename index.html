@@ -60,6 +60,8 @@
         .cv-section { break-inside: avoid-page; page-break-inside: avoid; }
         .cv-entry { break-inside: avoid-page; page-break-inside: avoid; }
         .cv-bullet { break-inside: avoid; page-break-inside: avoid; }
+        p, li, h1, h2, h3 { break-inside: avoid-page; page-break-inside: avoid; }
+        p, li { orphans: 3; widows: 3; }
         @media print {
             body * { visibility: hidden; }
             #cv-print-area, #cv-print-area * { visibility: visible; }
@@ -606,11 +608,16 @@ const Builder = ({ cvData, setCvData, onBack }) => {
   const downloadPDF = () => {
     const element = document.getElementById('cv-print-area');
     const opts = {
-      margin: [18, 16, 18, 16],
+      // Microsoft Word default: 1 inch margins on A4
+      margin: [25.4, 25.4, 25.4, 25.4],
       filename: `${cvData.personal.name || 'Finance-CV'}.pdf`,
       image: { type: 'jpeg', quality: 0.92 },
-      html2canvas: { scale: 1.4, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+      html2canvas: { scale: 1.25, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+      pagebreak: {
+        mode: ['avoid-all', 'css', 'legacy'],
+        avoid: ['.cv-section', '.cv-entry', '.cv-bullet', 'p', 'li', 'h1', 'h2', 'h3']
+      }
     };
     html2pdf().set(opts).from(element).save();
   };
