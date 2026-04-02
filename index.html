@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finance CV Builder South Africa | ATS-Friendly Accounting CVs</title>
+    <meta name="description" content="Build a professional, ATS-friendly finance and accounting CV for the South African job market. Tailor your CV for Financial Accountant, Bookkeeper, AP/AR, Payroll, and related roles." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f3f8f6',
+                            100: '#e3efea',
+                            600: '#166a54',
+                            700: '#125843',
+                            900: '#0f2d25'
+                        },
+                        ink: {
+                            900: '#10231c',
+                            700: '#2a443a',
+                            500: '#4f6b61'
+                        },
+                        line: '#d8e4de',
+                        panel: '#f8fbfa'
+                    },
+                    fontFamily: {
+                        sans: ['Public Sans', 'sans-serif'],
+                        serif: ['Source Serif 4', 'serif']
+                    },
+                    boxShadow: {
+                        card: '0 12px 40px rgba(16, 35, 28, 0.08)'
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Public Sans', sans-serif; background: #eef4f1; color: #10231c; }
+        .section-shell { background: #ffffff; border: 1px solid #d8e4de; border-radius: 16px; box-shadow: 0 8px 30px rgba(16, 35, 28, 0.05); }
+        .btn-primary { background: #166a54; color: #ffffff; border: 1px solid #166a54; transition: 0.2s ease; }
+        .btn-primary:hover { background: #125843; border-color: #125843; }
+        .btn-secondary { background: #ffffff; color: #166a54; border: 1px solid #166a54; transition: 0.2s ease; }
+        .btn-secondary:hover { background: #f3f8f6; }
+        .input-field { width: 100%; border: 1px solid #c9d8d1; border-radius: 10px; padding: 0.7rem 0.85rem; font-size: 0.95rem; background: #fff; }
+        .input-field:focus { outline: none; border-color: #166a54; box-shadow: 0 0 0 3px rgba(22, 106, 84, 0.15); }
+        .cv-print { background: #ffffff; color: #111827; }
+        .cv-section { break-inside: avoid-page; page-break-inside: avoid; }
+        .cv-entry { break-inside: avoid-page; page-break-inside: avoid; }
+        .cv-bullet { break-inside: avoid; page-break-inside: avoid; }
+        @media print {
+            body * { visibility: hidden; }
+            #cv-print-area, #cv-print-area * { visibility: visible; }
+            #cv-print-area { position: absolute; left: 0; top: 0; width: 210mm; }
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useMemo, useState, useEffect } = React;
+
+const STORAGE_KEY = 'finance-cv-builder:data:v2';
+
+const supportedRoles = [
+  'Financial Accountant',
+  'Junior Accountant',
+  'Accountant',
+  'Assistant Accountant',
+  'Bookkeeper',
+  'Finance Clerk',
+  'Accounts Payable Clerk',
+  'Accounts Receivable Clerk',
+  'Debtors Clerk',
+  'Creditors Clerk',
+  'Billing Administrator',
+  'Management Accountant',
+  'Payroll Administrator',
+  'Audit Assistant',
+  'Finance Intern'
+];
+
+const financeKeywords = [
+  'Financial reporting', 'Reconciliations', 'Accounts payable', 'Accounts receivable', 'Invoicing',
+  'Journals', 'General ledger', 'Cashbook', 'VAT', 'Payroll support', 'Creditors', 'Debtors',
+  'Month-end reporting', 'Compliance', 'Audit support', 'Budgeting support', 'Data capturing',
+  'Spreadsheet reporting', 'Financial statements'
+];
+
+const roleBulletSuggestions = {
+  'Financial Accountant': [
+    'Prepared month-end reconciliation schedules and supported timely reporting packs.',
+    'Reviewed ledger entries for completeness and accuracy before reporting deadlines.',
+    'Supported audit requests with reconciled schedules and complete supporting documents.'
+  ],
+  'Junior Accountant': [
+    'Processed journals, invoice records, and supporting documentation with high attention to detail.',
+    'Assisted with account reconciliations and followed up on reconciling items.',
+    'Maintained organised financial records to support month-end and audit preparation.'
+  ],
+  'Bookkeeper': [
+    'Maintained day-to-day bookkeeping records including invoice capture and payment tracking.',
+    'Performed supplier and customer reconciliations and resolved discrepancies promptly.',
+    'Updated cashbook and prepared transaction summaries for reporting review.'
+  ],
+  'Accounts Payable Clerk': [
+    'Captured supplier invoices and verified supporting documents for AP processing.',
+    'Prepared creditor reconciliations and escalated discrepancies before payment runs.',
+    'Supported payment cycle administration and maintained accurate AP records.'
+  ],
+  'Accounts Receivable Clerk': [
+    'Generated invoices and allocated customer receipts accurately in debtor accounts.',
+    'Monitored outstanding balances and supported debtor follow-up activities.',
+    'Prepared AR aging updates and reconciliations for management review.'
+  ],
+  'Payroll Administrator': [
+    'Supported payroll data preparation and validated input accuracy before payroll processing.',
+    'Maintained payroll records and compliance documentation for reporting periods.',
+    'Assisted with payroll reconciliations and query resolution with internal stakeholders.'
+  ]
+};
+
+const howItWorks = [
+  { title: 'Choose A Template', detail: 'Select a professional finance CV template with ATS-friendly structure and formatting.' },
+  { title: 'Fill In Your Details', detail: 'Add your profile, experience, education, and qualifications section by section.' },
+  { title: 'Tailor For Finance Roles', detail: 'Apply role-based wording and keywords for accounting, AP/AR, bookkeeping, payroll, and reporting jobs.' },
+  { title: 'Download And Apply', detail: 'Export your CV as a clean PDF and apply confidently to recruiter and employer listings.' }
+];
+
+const platformBenefits = [
+  'ATS-friendly formatting for recruiter systems',
+  'Finance-focused wording for summaries and experience',
+  'Professional templates designed for accounting job applications',
+  'Easy editing with guided section flow',
+  'Recruiter-ready layouts for clean presentation',
+  'Downloadable PDF output suitable for online applications'
+];
+
+const templateCards = [
+  { name: 'Professional', desc: 'Balanced layout for Financial Accountant and Junior Accountant applications.' },
+  { name: 'Corporate', desc: 'Structured style for finance operations, reporting, and audit support roles.' },
+  { name: 'Minimal', desc: 'Clean text-first layout optimized for ATS scanning and PDF submissions.' },
+  { name: 'Black-And-White', desc: 'Print-ready format with clear hierarchy for formal recruitment processes.' }
+];
+
+const featureCards = [
+  'Guided CV creation flow',
+  'Section-by-section editing',
+  'AI support for summaries and bullet points',
+  'Role-based suggestions',
+  'Keyword optimization hints',
+  'ATS score indicator',
+  'Download as PDF',
+  'Mobile responsive experience'
+];
+
+const faqItems = [
+  {
+    q: 'Is this CV builder ATS-friendly?',
+    a: 'Yes. The structure, labels, and content flow are built to support ATS readability and recruiter review.'
+  },
+  {
+    q: 'Can I use it for accounting jobs?',
+    a: 'Yes. It is specifically designed for finance and accounting roles, including AP/AR, bookkeeping, payroll, and reporting positions.'
+  },
+  {
+    q: 'Can I download my CV as PDF?',
+    a: 'Yes. You can export your CV as a clean PDF suitable for online applications and email submissions.'
+  },
+  {
+    q: 'Does it help with professional summaries?',
+    a: 'Yes. You can generate a finance-focused summary and tailor it to specific job titles.'
+  },
+  {
+    q: 'Can I edit my CV later?',
+    a: 'Yes. Your draft can be saved in your browser so you can continue editing later.'
+  },
+  {
+    q: 'Is it suitable for entry-level and experienced candidates?',
+    a: 'Yes. The builder supports finance interns, junior candidates, and mid-level finance professionals.'
+  }
+];
+
+const testimonials = [
+  {
+    title: 'Designed For Serious Job Seekers',
+    quote: 'The structure helps users present finance experience clearly, with less guesswork on wording and formatting.'
+  },
+  {
+    title: 'Built For Recruiter-Ready CVs',
+    quote: 'The role-focused prompts help users position reconciliations, reporting, and month-end support effectively.'
+  },
+  {
+    title: 'Simple, Fast, Professional',
+    quote: 'A practical tool for producing clean CVs that are easy to review and suitable for applications across South Africa.'
+  }
+];
+
+const defaultCvData = {
+  personal: {
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    linkedin: '',
+    targetRole: 'Financial Accountant',
+    summary: ''
+  },
+  experience: [],
+  skills: {
+    accounting: [],
+    systems: [],
+    compliance: []
+  },
+  education: []
+};
+
+const generateFinanceSummary = (targetRole) => {
+  return `Detail-oriented finance professional targeting ${targetRole} opportunities, with practical experience in reconciliations, reporting support, record accuracy, and month-end administration. Skilled in accounts payable and receivable workflows, invoicing, data capturing, and spreadsheet-based reporting. Committed to compliance, clear documentation, and reliable financial operations support.`;
+};
+
+const calculateKeywordCoverage = (cvData) => {
+  const fullText = [
+    cvData.personal.summary,
+    cvData.personal.targetRole,
+    ...cvData.experience.flatMap((exp) => [exp.role, exp.company, ...exp.bullets]),
+    ...cvData.skills.accounting,
+    ...cvData.skills.systems,
+    ...cvData.skills.compliance
+  ].join(' ').toLowerCase();
+
+  const matched = financeKeywords.filter((kw) => fullText.includes(kw.toLowerCase()));
+  const score = Math.min(100, Math.round((matched.length / financeKeywords.length) * 100));
+
+  return { score, matched };
+};
+
+const FormInput = ({ label, value, onChange, placeholder, type = 'text' }) => (
+  <div className="mb-4">
+    <label className="block text-sm font-semibold text-ink-700 mb-1.5">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="input-field"
+    />
+  </div>
+);
+
+const SkillCategory = ({ title, skills, onAddSkill, onRemoveSkill }) => {
+  const [input, setInput] = useState('');
+
+  const add = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    onAddSkill(trimmed);
+    setInput('');
+  };
+
+  return (
+    <div className="mb-5">
+      <h4 className="font-semibold text-ink-900 mb-2">{title}</h4>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {skills.map((s, i) => (
+          <span key={`${s}-${i}`} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand-100 text-ink-900 text-sm">
+            {s}
+            <button type="button" onClick={() => onRemoveSkill(s)} className="text-ink-500 hover:text-ink-900">×</button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+          placeholder={`Add ${title.toLowerCase()}...`}
+          className="input-field"
+        />
+        <button type="button" className="btn-secondary px-4 rounded-lg font-semibold" onClick={add}>Add</button>
+      </div>
+    </div>
+  );
+};
+
+const CVPreview = ({ data, isPreview = true }) => {
+  const { personal, experience, skills, education } = data;
+
+  return (
+    <div className={`cv-print ${isPreview ? '' : ''} font-sans`}>
+      <div className="p-6 border-b-2 border-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900">{personal.name || 'Candidate Name'}</h1>
+        <p className="text-base text-gray-700 mt-0.5">{personal.targetRole || 'Financial Accountant'}</p>
+        <p className="text-sm text-gray-600 mt-2">
+          {[personal.email, personal.phone, personal.location, personal.linkedin].filter(Boolean).join(' | ')}
+        </p>
+      </div>
+
+      {personal.summary && (
+        <section className="p-6 border-b border-gray-200 cv-section">
+          <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Professional Summary</h2>
+          <p className="text-sm leading-relaxed text-gray-700">{personal.summary}</p>
+        </section>
+      )}
+
+      {(skills.accounting.length || skills.systems.length || skills.compliance.length) > 0 && (
+        <section className="p-6 border-b border-gray-200 cv-section">
+          <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Core Competencies</h2>
+          <div className="text-sm text-gray-700 space-y-1.5">
+            {skills.accounting.length > 0 && <p><span className="font-semibold">Accounting & Reporting:</span> {skills.accounting.join(', ')}</p>}
+            {skills.systems.length > 0 && <p><span className="font-semibold">Tools & Systems:</span> {skills.systems.join(', ')}</p>}
+            {skills.compliance.length > 0 && <p><span className="font-semibold">Compliance & Controls:</span> {skills.compliance.join(', ')}</p>}
+          </div>
+        </section>
+      )}
+
+      {experience.length > 0 && (
+        <section className="p-6 border-b border-gray-200 cv-section">
+          <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Professional Experience</h2>
+          {experience.map((exp, i) => (
+            <article key={i} className="mb-4 cv-entry">
+              <div className="flex justify-between gap-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{exp.role || 'Role'}</h3>
+                  <p className="text-gray-700 text-sm">{exp.company || 'Company'}</p>
+                </div>
+                <p className="text-xs text-gray-600">{exp.startDate || 'Start'} - {exp.endDate || 'End'}</p>
+              </div>
+              <ul className="mt-2 space-y-1">
+                {exp.bullets.filter(Boolean).map((b, bi) => (
+                  <li key={bi} className="text-sm text-gray-700 leading-relaxed pl-4 cv-bullet">• {b}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {education.length > 0 && (
+        <section className="p-6 cv-section">
+          <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Education</h2>
+          {education.map((edu, i) => (
+            <article key={i} className="mb-3 cv-entry">
+              <div className="flex justify-between gap-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{edu.qualification || 'Qualification'}</h3>
+                  <p className="text-sm text-gray-700">{edu.institution || 'Institution'}</p>
+                </div>
+                <p className="text-xs text-gray-600">{edu.year || 'Year'}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+};
+
+const HeroSection = ({ onStart, hasSavedProgress, onStartNew }) => (
+  <section className="section-shell p-8 md:p-12 mb-8">
+    <div className="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <p className="text-sm uppercase tracking-wide font-semibold text-brand-700 mb-3">Finance CV Builder For South Africa</p>
+        <h1 className="font-serif text-4xl md:text-5xl text-ink-900 leading-tight mb-4">Build A Professional Finance And Accounting CV That Recruiters Can Shortlist</h1>
+        <p className="text-ink-700 text-lg mb-6">Create an ATS-friendly CV tailored for Financial Accountant, Junior Accountant, AP/AR, Bookkeeper, Payroll, and related finance roles.</p>
+        <div className="flex flex-wrap gap-3 mb-3">
+          {hasSavedProgress ? (
+            <>
+              <button className="btn-primary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Continue CV</button>
+              <button className="btn-secondary px-5 py-3 rounded-lg font-semibold" onClick={onStartNew}>Start New CV</button>
+            </>
+          ) : (
+            <>
+              <button className="btn-primary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Build Your CV</button>
+              <button className="btn-secondary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Create Finance CV</button>
+              <button className="btn-secondary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Start For Free</button>
+            </>
+          )}
+        </div>
+        <p className="text-sm text-ink-500">No design skills required. Structured guidance for cleaner CVs and stronger finance applications.</p>
+      </div>
+      <div className="bg-panel border border-line rounded-xl p-6">
+        <h3 className="font-semibold text-ink-900 mb-3">What You Get</h3>
+        <ul className="space-y-2 text-sm text-ink-700">
+          <li>• ATS-friendly CV structure</li>
+          <li>• Finance role keyword prompts</li>
+          <li>• Professional summary helper</li>
+          <li>• Recruiter-ready PDF export</li>
+          <li>• South African market guidance</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+);
+
+const InfoSection = ({ title, subtitle, children }) => (
+  <section className="section-shell p-7 md:p-9 mb-6">
+    <h2 className="text-2xl font-bold text-ink-900 mb-1">{title}</h2>
+    {subtitle && <p className="text-ink-700 mb-5">{subtitle}</p>}
+    {children}
+  </section>
+);
+
+const LandingPage = ({ onStart, hasSavedProgress, onStartNew }) => (
+  <main className="max-w-6xl mx-auto px-4 py-8 md:py-10">
+    <HeroSection onStart={onStart} hasSavedProgress={hasSavedProgress} onStartNew={onStartNew} />
+
+    <InfoSection title="How It Works" subtitle="Complete your finance CV in four practical steps.">
+      <div className="grid md:grid-cols-4 gap-4">
+        {howItWorks.map((step, index) => (
+          <div key={step.title} className="border border-line rounded-xl p-4 bg-white">
+            <p className="text-sm font-semibold text-brand-700 mb-1">Step {index + 1}</p>
+            <h3 className="font-semibold text-ink-900 mb-1.5">{step.title}</h3>
+            <p className="text-sm text-ink-700">{step.detail}</p>
+          </div>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Why This CV Builder" subtitle="Built to improve CV quality, clarity, and recruiter confidence.">
+      <div className="grid md:grid-cols-2 gap-3">
+        {platformBenefits.map((item) => (
+          <div key={item} className="border border-line rounded-lg p-3 text-sm text-ink-700 bg-panel">• {item}</div>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Finance Roles We Support" subtitle="Role-focused guidance for common accounting and finance applications.">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        {supportedRoles.map((role) => (
+          <div key={role} className="text-sm px-3 py-2 rounded-lg border border-line bg-white">{role}</div>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Skills And Keywords" subtitle="Suggested terms recruiters often look for in finance CVs.">
+      <div className="flex flex-wrap gap-2">
+        {financeKeywords.map((kw) => (
+          <span key={kw} className="px-3 py-1.5 rounded-full text-sm bg-brand-100 text-ink-900">{kw}</span>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="CV Templates" subtitle="Templates designed for professional finance and accounting applications.">
+      <div className="grid md:grid-cols-4 gap-4">
+        {templateCards.map((card) => (
+          <div key={card.name} className="border border-line rounded-xl p-4 bg-white">
+            <h3 className="font-semibold text-ink-900 mb-1">{card.name}</h3>
+            <p className="text-sm text-ink-700">{card.desc}</p>
+          </div>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Platform Features" subtitle="Everything needed to build and refine a finance-focused CV.">
+      <div className="grid md:grid-cols-2 gap-2.5">
+        {featureCards.map((feature) => (
+          <div key={feature} className="text-sm rounded-lg border border-line p-3 bg-white">• {feature}</div>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Trust And Credibility" subtitle="Practical positioning for serious job applications.">
+      <div className="grid md:grid-cols-3 gap-4">
+        {testimonials.map((item) => (
+          <blockquote key={item.title} className="border border-line rounded-xl p-4 bg-panel">
+            <p className="font-semibold text-ink-900 mb-2">{item.title}</p>
+            <p className="text-sm text-ink-700">"{item.quote}"</p>
+          </blockquote>
+        ))}
+      </div>
+    </InfoSection>
+
+    <InfoSection title="Frequently Asked Questions">
+      <div className="space-y-3">
+        {faqItems.map((faq) => (
+          <details key={faq.q} className="border border-line rounded-lg p-4 bg-white">
+            <summary className="font-semibold text-ink-900 cursor-pointer">{faq.q}</summary>
+            <p className="mt-2 text-sm text-ink-700">{faq.a}</p>
+          </details>
+        ))}
+      </div>
+    </InfoSection>
+
+    <section className="section-shell p-7 md:p-9 mt-8 bg-brand-50 border-brand-100">
+      <h2 className="text-2xl md:text-3xl font-bold text-ink-900 mb-2">Build Your Finance And Accounting CV Today</h2>
+      <p className="text-ink-700 mb-5">Create a clean, recruiter-ready CV tailored for the South African finance job market.</p>
+      <div className="flex flex-wrap gap-3">
+        {hasSavedProgress ? (
+          <>
+            <button className="btn-primary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Continue CV</button>
+            <button className="btn-secondary px-5 py-3 rounded-lg font-semibold" onClick={onStartNew}>Start New CV</button>
+          </>
+        ) : (
+          <>
+            <button className="btn-primary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Start Building Now</button>
+            <button className="btn-secondary px-5 py-3 rounded-lg font-semibold" onClick={onStart}>Create Finance CV</button>
+          </>
+        )}
+      </div>
+      <p className="text-xs text-ink-500 mt-3">Structured guidance. ATS-friendly format. Professional output.</p>
+    </section>
+
+    <footer className="pt-8 pb-2 text-sm text-ink-500 text-center">
+      Finance CV Builder | South Africa-focused CV creation for finance and accounting careers
+    </footer>
+  </main>
+);
+
+const Builder = ({ cvData, setCvData, onBack }) => {
+  const [step, setStep] = useState(0);
+
+  const stepNames = ['Personal', 'Experience', 'Skills', 'Education', 'Review'];
+  const roleSuggestions = roleBulletSuggestions[cvData.personal.targetRole] || roleBulletSuggestions['Junior Accountant'];
+
+  const keywordStatus = useMemo(() => calculateKeywordCoverage(cvData), [cvData]);
+
+  const updatePersonal = (field, value) => {
+    setCvData((prev) => ({ ...prev, personal: { ...prev.personal, [field]: value } }));
+  };
+
+  const addExperience = () => {
+    setCvData((prev) => ({
+      ...prev,
+      experience: [...prev.experience, { company: '', role: '', startDate: '', endDate: '', bullets: [''] }]
+    }));
+  };
+
+  const updateExperience = (index, updated) => {
+    setCvData((prev) => {
+      const list = [...prev.experience];
+      list[index] = updated;
+      return { ...prev, experience: list };
+    });
+  };
+
+  const removeExperience = (index) => {
+    setCvData((prev) => ({ ...prev, experience: prev.experience.filter((_, i) => i !== index) }));
+  };
+
+  const addEducation = () => {
+    setCvData((prev) => ({
+      ...prev,
+      education: [...prev.education, { qualification: '', institution: '', year: '' }]
+    }));
+  };
+
+  const updateEducation = (index, updated) => {
+    setCvData((prev) => {
+      const list = [...prev.education];
+      list[index] = updated;
+      return { ...prev, education: list };
+    });
+  };
+
+  const removeEducation = (index) => {
+    setCvData((prev) => ({ ...prev, education: prev.education.filter((_, i) => i !== index) }));
+  };
+
+  const addSkill = (cat, skill) => {
+    setCvData((prev) => ({ ...prev, skills: { ...prev.skills, [cat]: [...prev.skills[cat], skill] } }));
+  };
+
+  const removeSkill = (cat, skill) => {
+    setCvData((prev) => ({ ...prev, skills: { ...prev.skills, [cat]: prev.skills[cat].filter((s) => s !== skill) } }));
+  };
+
+  const addFinanceSuggestions = (index) => {
+    const exp = cvData.experience[index];
+    const merged = [...exp.bullets.filter(Boolean), ...roleSuggestions].slice(0, 6);
+    updateExperience(index, { ...exp, bullets: merged });
+  };
+
+  const downloadPDF = () => {
+    const element = document.getElementById('cv-print-area');
+    const opts = {
+      margin: [18, 16, 18, 16],
+      filename: `${cvData.personal.name || 'Finance-CV'}.pdf`,
+      image: { type: 'jpeg', quality: 0.92 },
+      html2canvas: { scale: 1.4, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+    };
+    html2pdf().set(opts).from(element).save();
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-ink-900">Finance CV Builder</h1>
+          <p className="text-sm text-ink-600">Build an ATS-friendly CV for finance and accounting roles.</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn-secondary rounded-lg px-4 py-2 font-semibold" onClick={onBack}>Back To Landing</button>
+          <button className="btn-primary rounded-lg px-4 py-2 font-semibold" onClick={downloadPDF}>Download PDF</button>
+        </div>
+      </div>
+
+      <div className="section-shell p-4 md:p-5 mb-5">
+        <div className="grid grid-cols-5 gap-2">
+          {stepNames.map((s, i) => (
+            <button
+              key={s}
+              className={`rounded-lg px-2 py-2 text-sm font-semibold border ${step === i ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-ink-700 border-line'}`}
+              onClick={() => setStep(i)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="section-shell p-5 md:p-6">
+          {step === 0 && (
+            <div>
+              <h2 className="text-xl font-bold mb-4">Personal Details</h2>
+              <FormInput label="Full Name" value={cvData.personal.name} onChange={(v) => updatePersonal('name', v)} placeholder="Your full name" />
+              <FormInput label="Email" value={cvData.personal.email} onChange={(v) => updatePersonal('email', v)} placeholder="name@email.com" type="email" />
+              <FormInput label="Phone" value={cvData.personal.phone} onChange={(v) => updatePersonal('phone', v)} placeholder="+27 00 000 0000" />
+              <FormInput label="Location" value={cvData.personal.location} onChange={(v) => updatePersonal('location', v)} placeholder="Johannesburg, Gauteng" />
+              <FormInput label="LinkedIn" value={cvData.personal.linkedin} onChange={(v) => updatePersonal('linkedin', v)} placeholder="linkedin.com/in/username" />
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-ink-700 mb-1.5">Target Role</label>
+                <select className="input-field" value={cvData.personal.targetRole} onChange={(e) => updatePersonal('targetRole', e.target.value)}>
+                  {supportedRoles.map((role) => <option key={role} value={role}>{role}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-sm font-semibold text-ink-700">Professional Summary</label>
+                  <button
+                    type="button"
+                    className="text-sm text-brand-700 font-semibold"
+                    onClick={() => updatePersonal('summary', generateFinanceSummary(cvData.personal.targetRole))}
+                  >
+                    Generate Finance Summary
+                  </button>
+                </div>
+                <textarea
+                  rows="4"
+                  className="input-field"
+                  value={cvData.personal.summary}
+                  onChange={(e) => updatePersonal('summary', e.target.value)}
+                  placeholder="Add a concise summary aligned to your finance target role."
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Experience</h2>
+                <button className="btn-secondary rounded-lg px-3 py-2 text-sm font-semibold" onClick={addExperience}>Add Role</button>
+              </div>
+
+              {cvData.experience.length === 0 ? (
+                <p className="text-sm text-ink-600 border border-line rounded-lg p-3 bg-panel">No experience entries yet. Add your first role to begin.</p>
+              ) : cvData.experience.map((exp, idx) => (
+                <div key={idx} className="border border-line rounded-xl p-4 mb-4 bg-panel">
+                  <div className="flex justify-between items-start gap-2 mb-3">
+                    <h3 className="font-semibold text-ink-900">Role {idx + 1}</h3>
+                    <button className="text-sm text-red-700" onClick={() => removeExperience(idx)}>Remove</button>
+                  </div>
+                  <FormInput label="Company" value={exp.company} onChange={(v) => updateExperience(idx, { ...exp, company: v })} placeholder="Company name" />
+                  <FormInput label="Role Title" value={exp.role} onChange={(v) => updateExperience(idx, { ...exp, role: v })} placeholder="e.g., Accounts Payable Clerk" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormInput label="Start Date" value={exp.startDate} onChange={(v) => updateExperience(idx, { ...exp, startDate: v })} placeholder="Jan 2024" />
+                    <FormInput label="End Date" value={exp.endDate} onChange={(v) => updateExperience(idx, { ...exp, endDate: v })} placeholder="Present" />
+                  </div>
+
+                  <div className="mb-2 flex justify-between items-center">
+                    <label className="block text-sm font-semibold text-ink-700">Achievement Bullets</label>
+                    <button className="text-sm text-brand-700 font-semibold" onClick={() => addFinanceSuggestions(idx)}>Insert Suggested Bullets</button>
+                  </div>
+                  {exp.bullets.map((bullet, bi) => (
+                    <div key={bi} className="flex gap-2 mb-2">
+                      <textarea
+                        className="input-field"
+                        rows="2"
+                        value={bullet}
+                        onChange={(e) => {
+                          const updated = [...exp.bullets];
+                          updated[bi] = e.target.value;
+                          updateExperience(idx, { ...exp, bullets: updated });
+                        }}
+                        placeholder="Describe responsibilities and outcomes clearly."
+                      />
+                      <button
+                        className="text-red-700 text-sm"
+                        onClick={() => {
+                          const updated = exp.bullets.filter((_, i) => i !== bi);
+                          updateExperience(idx, { ...exp, bullets: updated.length ? updated : [''] });
+                        }}
+                      >Remove</button>
+                    </div>
+                  ))}
+                  <button
+                    className="text-sm text-brand-700 font-semibold"
+                    onClick={() => updateExperience(idx, { ...exp, bullets: [...exp.bullets, ''] })}
+                  >
+                    Add Bullet
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <h2 className="text-xl font-bold mb-4">Skills And Keywords</h2>
+              <SkillCategory
+                title="Accounting Skills"
+                skills={cvData.skills.accounting}
+                onAddSkill={(skill) => addSkill('accounting', skill)}
+                onRemoveSkill={(skill) => removeSkill('accounting', skill)}
+              />
+              <SkillCategory
+                title="Tools And Systems"
+                skills={cvData.skills.systems}
+                onAddSkill={(skill) => addSkill('systems', skill)}
+                onRemoveSkill={(skill) => removeSkill('systems', skill)}
+              />
+              <SkillCategory
+                title="Compliance And Controls"
+                skills={cvData.skills.compliance}
+                onAddSkill={(skill) => addSkill('compliance', skill)}
+                onRemoveSkill={(skill) => removeSkill('compliance', skill)}
+              />
+
+              <div className="border border-line rounded-lg p-3 bg-panel mt-4">
+                <p className="text-sm font-semibold text-ink-900 mb-2">Suggested Keywords</p>
+                <div className="flex flex-wrap gap-2">
+                  {financeKeywords.slice(0, 12).map((kw) => (
+                    <button
+                      key={kw}
+                      type="button"
+                      className="text-xs px-2 py-1 rounded-full bg-brand-100"
+                      onClick={() => addSkill('accounting', kw)}
+                    >
+                      {kw}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Education</h2>
+                <button className="btn-secondary rounded-lg px-3 py-2 text-sm font-semibold" onClick={addEducation}>Add Education</button>
+              </div>
+
+              {cvData.education.length === 0 ? (
+                <p className="text-sm text-ink-600 border border-line rounded-lg p-3 bg-panel">No education entries added yet.</p>
+              ) : cvData.education.map((edu, idx) => (
+                <div key={idx} className="border border-line rounded-xl p-4 mb-4 bg-panel">
+                  <div className="flex justify-between items-start gap-2 mb-3">
+                    <h3 className="font-semibold text-ink-900">Education {idx + 1}</h3>
+                    <button className="text-sm text-red-700" onClick={() => removeEducation(idx)}>Remove</button>
+                  </div>
+                  <FormInput label="Qualification" value={edu.qualification} onChange={(v) => updateEducation(idx, { ...edu, qualification: v })} placeholder="e.g., Diploma in Financial Accounting" />
+                  <FormInput label="Institution" value={edu.institution} onChange={(v) => updateEducation(idx, { ...edu, institution: v })} placeholder="Institution name" />
+                  <FormInput label="Year" value={edu.year} onChange={(v) => updateEducation(idx, { ...edu, year: v })} placeholder="2025" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {step === 4 && (
+            <div>
+              <h2 className="text-xl font-bold mb-4">Review And Optimize</h2>
+              <div className="border border-line rounded-lg p-4 bg-panel mb-4">
+                <p className="text-sm font-semibold text-ink-900 mb-1">ATS Keyword Coverage</p>
+                <p className="text-3xl font-bold text-brand-700">{keywordStatus.score}%</p>
+                <p className="text-sm text-ink-700 mt-2">Matched keywords: {keywordStatus.matched.length > 0 ? keywordStatus.matched.join(', ') : 'No target keywords yet'}</p>
+              </div>
+
+              <div className="border border-line rounded-lg p-4 bg-white mb-4">
+                <h3 className="font-semibold text-ink-900 mb-2">South African CV Guidance</h3>
+                <ul className="text-sm text-ink-700 space-y-1">
+                  <li>• Keep wording formal, concise, and role-relevant.</li>
+                  <li>• Prioritize reconciliations, reporting support, AP/AR, and month-end tasks.</li>
+                  <li>• Use measurable outcomes when supported by real experience.</li>
+                </ul>
+              </div>
+
+              <button className="btn-primary rounded-lg px-4 py-2 font-semibold" onClick={downloadPDF}>Download CV PDF</button>
+            </div>
+          )}
+
+          <div className="flex justify-between mt-6">
+            <button
+              className="btn-secondary rounded-lg px-4 py-2 font-semibold"
+              disabled={step === 0}
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+            >
+              Previous
+            </button>
+            <button
+              className="btn-primary rounded-lg px-4 py-2 font-semibold"
+              disabled={step === stepNames.length - 1}
+              onClick={() => setStep((s) => Math.min(stepNames.length - 1, s + 1))}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
+        <div className="section-shell p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-ink-900">Live CV Preview</h3>
+            <span className="text-xs text-ink-500">A4 format</span>
+          </div>
+          <div className="border border-line rounded-xl overflow-hidden bg-white" style={{ aspectRatio: '210 / 297' }}>
+            <div className="h-full overflow-y-auto">
+              <CVPreview data={cvData} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ position: 'fixed', left: '-99999px', top: 0, width: '190mm', background: '#fff' }} aria-hidden="true">
+        <div id="cv-print-area" style={{ width: '190mm', minHeight: '270mm', background: '#fff' }}>
+          <CVPreview data={cvData} isPreview={false} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function App() {
+  const [view, setView] = useState('landing');
+  const [cvData, setCvData] = useState(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultCvData;
+      const parsed = JSON.parse(raw);
+      return {
+        ...defaultCvData,
+        ...parsed,
+        personal: { ...defaultCvData.personal, ...(parsed.personal || {}) },
+        skills: { ...defaultCvData.skills, ...(parsed.skills || {}) },
+        experience: Array.isArray(parsed.experience) ? parsed.experience : [],
+        education: Array.isArray(parsed.education) ? parsed.education : []
+      };
+    } catch {
+      return defaultCvData;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cvData));
+    } catch {}
+  }, [cvData]);
+
+  const hasSavedProgress = Boolean(
+    cvData.personal.name.trim() ||
+    cvData.personal.email.trim() ||
+    cvData.personal.phone.trim() ||
+    cvData.personal.location.trim() ||
+    cvData.personal.linkedin.trim() ||
+    cvData.personal.summary.trim() ||
+    cvData.experience.length > 0 ||
+    cvData.education.length > 0 ||
+    cvData.skills.accounting.length > 0 ||
+    cvData.skills.systems.length > 0 ||
+    cvData.skills.compliance.length > 0
+  );
+
+  const handleStartNew = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+    setCvData(defaultCvData);
+    setView('builder');
+  };
+
+  return view === 'landing'
+    ? <LandingPage onStart={() => setView('builder')} hasSavedProgress={hasSavedProgress} onStartNew={handleStartNew} />
+    : <Builder cvData={cvData} setCvData={setCvData} onBack={() => setView('landing')} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
