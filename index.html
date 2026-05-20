@@ -56,16 +56,29 @@
         .btn-secondary:hover { background: #f3f8f6; }
         .input-field { width: 100%; border: 1px solid #c9d8d1; border-radius: 10px; padding: 0.7rem 0.85rem; font-size: 0.95rem; background: #fff; }
         .input-field:focus { outline: none; border-color: #166a54; box-shadow: 0 0 0 3px rgba(22, 106, 84, 0.15); }
-        .cv-print { background: #ffffff; color: #111827; }
-        .cv-section { break-inside: avoid-page; page-break-inside: avoid; }
+        .cv-print { background: #ffffff; color: #111827; overflow-wrap: break-word; word-break: normal; }
+        .cv-export { width: 159.2mm; min-height: 246.2mm; font-size: 10.5pt; line-height: 1.32; }
+        .cv-header { padding: 0 0 10pt 0; border-bottom: 1.5pt solid #111827; }
+        .cv-section { break-inside: auto; page-break-inside: auto; }
         .cv-entry { break-inside: avoid-page; page-break-inside: avoid; }
         .cv-bullet { break-inside: avoid; page-break-inside: avoid; }
+        .cv-export .cv-section { padding: 10pt 0; border-bottom: 0.75pt solid #e5e7eb; }
+        .cv-export .cv-section:last-child { border-bottom: 0; }
+        .cv-export .cv-entry { margin-bottom: 9pt; }
+        .cv-export .cv-entry:last-child { margin-bottom: 0; }
+        .cv-export h1 { font-size: 18pt; line-height: 1.12; margin: 0; }
+        .cv-export h2 { font-size: 8.5pt; line-height: 1.2; margin: 0 0 5pt; letter-spacing: 0; }
+        .cv-export h3 { font-size: 10.5pt; line-height: 1.25; margin: 0; }
+        .cv-export p { margin: 0; }
+        .cv-export ul { margin: 5pt 0 0; padding: 0; }
+        .cv-export li { margin: 0 0 3pt; line-height: 1.32; }
         p, li, h1, h2, h3 { break-inside: avoid-page; page-break-inside: avoid; }
         p, li { orphans: 3; widows: 3; }
+        @page { size: A4; margin: 25.4mm; }
         @media print {
             body * { visibility: hidden; }
             #cv-print-area, #cv-print-area * { visibility: visible; }
-            #cv-print-area { position: absolute; left: 0; top: 0; width: 210mm; }
+            #cv-print-area { position: absolute; left: 25.4mm; top: 25.4mm; width: 159.2mm; }
         }
     </style>
 </head>
@@ -304,8 +317,8 @@ const CVPreview = ({ data, isPreview = true }) => {
   const { personal, experience, skills, education } = data;
 
   return (
-    <div className={`cv-print ${isPreview ? '' : ''} font-sans`}>
-      <div className="p-6 border-b-2 border-gray-900">
+    <div className={`cv-print ${isPreview ? 'cv-preview' : 'cv-export'} font-sans`}>
+      <div className={`${isPreview ? 'p-6 border-b-2 border-gray-900' : 'cv-header'}`}>
         <h1 className="text-2xl font-bold text-gray-900">{personal.name || 'Candidate Name'}</h1>
         <p className="text-base text-gray-700 mt-0.5">{personal.targetRole || 'Financial Accountant'}</p>
         <p className="text-sm text-gray-600 mt-2">
@@ -314,14 +327,14 @@ const CVPreview = ({ data, isPreview = true }) => {
       </div>
 
       {personal.summary && (
-        <section className="p-6 border-b border-gray-200 cv-section">
+        <section className={`${isPreview ? 'p-6 border-b border-gray-200' : ''} cv-section`}>
           <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Professional Summary</h2>
           <p className="text-sm leading-relaxed text-gray-700">{personal.summary}</p>
         </section>
       )}
 
       {(skills.accounting.length || skills.systems.length || skills.compliance.length) > 0 && (
-        <section className="p-6 border-b border-gray-200 cv-section">
+        <section className={`${isPreview ? 'p-6 border-b border-gray-200' : ''} cv-section`}>
           <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Core Competencies</h2>
           <div className="text-sm text-gray-700 space-y-1.5">
             {skills.accounting.length > 0 && <p><span className="font-semibold">Accounting & Reporting:</span> {skills.accounting.join(', ')}</p>}
@@ -332,10 +345,10 @@ const CVPreview = ({ data, isPreview = true }) => {
       )}
 
       {experience.length > 0 && (
-        <section className="p-6 border-b border-gray-200 cv-section">
+        <section className={`${isPreview ? 'p-6 border-b border-gray-200' : ''} cv-section`}>
           <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Professional Experience</h2>
           {experience.map((exp, i) => (
-            <article key={i} className="mb-4 cv-entry">
+            <article key={i} className={`${isPreview ? 'mb-4' : ''} cv-entry`}>
               <div className="flex justify-between gap-2">
                 <div>
                   <h3 className="font-semibold text-gray-900">{exp.role || 'Role'}</h3>
@@ -354,10 +367,10 @@ const CVPreview = ({ data, isPreview = true }) => {
       )}
 
       {education.length > 0 && (
-        <section className="p-6 cv-section">
+        <section className={`${isPreview ? 'p-6' : ''} cv-section`}>
           <h2 className="text-xs font-bold tracking-wide uppercase text-gray-800 mb-2">Education</h2>
           {education.map((edu, i) => (
-            <article key={i} className="mb-3 cv-entry">
+            <article key={i} className={`${isPreview ? 'mb-3' : ''} cv-entry`}>
               <div className="flex justify-between gap-2">
                 <div>
                   <h3 className="font-semibold text-gray-900">{edu.qualification || 'Qualification'}</h3>
@@ -607,16 +620,23 @@ const Builder = ({ cvData, setCvData, onBack }) => {
 
   const downloadPDF = () => {
     const element = document.getElementById('cv-print-area');
+    if (!element) return;
+
     const opts = {
       // Microsoft Word default: 1 inch margins on A4
       margin: [25.4, 25.4, 25.4, 25.4],
       filename: `${cvData.personal.name || 'Finance-CV'}.pdf`,
-      image: { type: 'jpeg', quality: 0.92 },
-      html2canvas: { scale: 1.25, useCORS: true },
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+        windowWidth: element.scrollWidth
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
       pagebreak: {
-        mode: ['avoid-all', 'css', 'legacy'],
-        avoid: ['.cv-section', '.cv-entry', '.cv-bullet', 'p', 'li', 'h1', 'h2', 'h3']
+        mode: ['css', 'legacy'],
+        avoid: ['.cv-entry', '.cv-bullet', 'p', 'li', 'h1', 'h2', 'h3']
       }
     };
     html2pdf().set(opts).from(element).save();
@@ -870,8 +890,8 @@ const Builder = ({ cvData, setCvData, onBack }) => {
         </div>
       </div>
 
-      <div style={{ position: 'fixed', left: '-99999px', top: 0, width: '190mm', background: '#fff' }} aria-hidden="true">
-        <div id="cv-print-area" style={{ width: '190mm', minHeight: '270mm', background: '#fff' }}>
+      <div style={{ position: 'fixed', left: '-99999px', top: 0, width: '159.2mm', background: '#fff' }} aria-hidden="true">
+        <div id="cv-print-area" style={{ width: '159.2mm', minHeight: '246.2mm', background: '#fff' }}>
           <CVPreview data={cvData} isPreview={false} />
         </div>
       </div>
